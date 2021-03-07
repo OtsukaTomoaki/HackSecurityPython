@@ -7,6 +7,7 @@ from ctypes import *
 import threading
 import time
 from ipaddress import ip_address, ip_network
+import traceback
 
 #リッスンするホストのIPアドレス
 host = '100.0.0.0'
@@ -15,7 +16,7 @@ host = '100.0.0.0'
 subnet = '100.0.0.0/24'
 
 #ICMPレスポンスのチェック用マジック文字列
-magic_message = 'PYTHONRULES!'
+magic_message = b'PYTHONRULES!'
 
 #UDPデータグラムをサブネット全体に送信
 def udp_sender(subnet, magic_message):
@@ -24,9 +25,11 @@ def udp_sender(subnet, magic_message):
 
     for ip in ip_network(subnet):
         try:
+            #print(ip)
             sender.sendto(magic_message, (str(ip), 65212))
         except:
             pass
+            #print(traceback.print_exc())
 
 #IPヘッダー
 class IP(Structure):
