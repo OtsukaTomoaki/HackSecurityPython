@@ -62,7 +62,7 @@ def dir_bruter(word_queue, extentions=None):
                 print(f'!!! {ex}')
 
 word_queue = build_wordlist(wordlist_file)
-extentions = ['.php', '.bak', 'orig', 'inc']
+extentions = ['.php', '.bak', '.orig', '.inc']
 
 for i in range(threads):
     t = threading.Thread(target=dir_bruter, args=(word_queue, extentions,))
